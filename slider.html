@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>Slider Demo</title>
+
+
+    <style>
+    html, body{
+      margin: 0;
+      padding: 0;
+    }
+    *{
+      box-sizing: border-box;
+    }
+    .slider{
+      width: 100%;
+      height: 500px;
+      overflow: hidden;
+      position: relative;
+    }
+      .slider-track{
+        position: absolute;
+        height: 100%;
+        display: flex;
+        transform-origin: 0 0;
+      }
+      .slider-track div{
+        background: #dede;
+        width: 100vw;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+    </style>
+  </head>
+  <body>
+
+    <div class="slider">
+      <div class="slider-track">
+        <div class="slide">
+          Slide 1
+        </div>
+        <div class="slide">
+          Slide 2
+        </div>
+        <div class="slide">
+          Slide 3
+        </div>
+      </div>
+    </div>
+    <script src="js/impetus.min.js"></script>
+
+
+    <script>
+    var sliderTrack = document.querySelector('.slider-track');
+    console.log(sliderTrack.clientWidth);
+    var sliderW = sliderTrack.clientWidth;
+    var slideW = sliderTrack.querySelector('.slide').clientWidth;
+    var boundLeft = (sliderW - slideW)*-1;
+    var boundRight = 0;
+    var myImpetus = new Impetus({
+      source: sliderTrack,
+      boundX: [boundLeft, boundRight],
+      update: function(x, y) {
+        // x = x*-1;
+        sliderTrack.style.transform = 'translateX('+(x)+'px)';
+          // whatever you want to do with the values
+          console.log(x);
+      }
+    });
+    </script>
+  </body>
+</html>
