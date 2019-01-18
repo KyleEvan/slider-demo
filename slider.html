@@ -6,15 +6,24 @@
 
 
     <style>
-    html, body{
-      margin: 0;
-      padding: 0;
-    }
     *{
       box-sizing: border-box;
     }
-    .slider{
+    html, body{
+      margin: 0;
+      padding: 0;
       width: 100%;
+      height: 100%;
+      margin: 0;
+      padding: 0;
+    }
+    body{
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .slider{
+      width: 50%;
       height: 500px;
       overflow: hidden;
       position: relative;
@@ -25,13 +34,33 @@
         display: flex;
         transform-origin: 0 0;
       }
-      .slider-track div{
+      .slider-track .slide{
+        position: relative;
         background: #dede;
-        width: 100vw;
+        height: 100%;
+
+      }
+      .slider-track .slide .inner-content{
+        position: relative;
+        width: 100%;
         height: 100%;
         display: flex;
         align-items: center;
         justify-content: center;
+        overflow: hidden;
+      }
+      .slider-track .slide .media{
+        position: absolute;
+        width: 120%;
+      }
+      .slider-track .slide *:not(.media){
+        position: relative;
+        z-index: 1;
+        text-transform: uppercase;
+        font-family: 'impact', 'arial';
+        font-weight: 900;
+        font-size: 3em;
+        color: #fff;
       }
     </style>
   </head>
@@ -40,13 +69,25 @@
     <div class="slider">
       <div class="slider-track">
         <div class="slide">
-          Slide 1
+          <div class="inner-content">
+            <span>Slide 1</span>
+            <img src="https://i.imgur.com/kQ8fpbE.jpg" class="media" />
+          </div>
         </div>
         <div class="slide">
-          Slide 2
+          <div class="inner-content">
+            <span>Slide 2</span>
+            <video preload="auto" autoplay loop muted class="media">
+              <source src="https://i.imgur.com/a717Jy5.mp4" type="video/mp4">
+              Your browser does not support the video tag.
+            </video>
+          </div>
         </div>
         <div class="slide">
-          Slide 3
+          <div class="inner-content">
+            <span>Slide 3</span>
+            <img src="https://i.imgur.com/MvDSIR8.jpg" class="media" />
+          </div>
         </div>
       </div>
     </div>
@@ -54,22 +95,79 @@
 
 
     <script>
-    var sliderTrack = document.querySelector('.slider-track');
-    console.log(sliderTrack.clientWidth);
+
+    function throttle(callback, wait, context = this) {
+      let timeout = null
+      let callbackArgs = null
+
+      const later = () => {
+        callback.apply(context, callbackArgs)
+        timeout = null
+      }
+
+      return function() {
+        if (!timeout) {
+          callbackArgs = arguments
+          timeout = setTimeout(later, wait)
+        }
+      }
+    }
+
+
+    function moveSliderTrack(track, x, y){
+      // var limit = 20;
+      // var callback = function(){
+        track.style.transform = 'translateX('+(x)+'px)';
+      // }
+      // callback();
+      // throttle(callback, limit)();
+    }
+
+    function initSlides(slidesParent, slideW){
+      console.log('getSlides!!#!#$!@#');
+      [].slice.call(slidesParent.children).forEach(function(slide){
+        console.log(slide);
+        slide.style.width = `${slideW}px`;
+      });
+    }
+
+
+
+
+
+    var slidesShown = 1; // full-bleed
+
+    var slider = document.querySelector('.slider');
+    var sliderTrack = slider.querySelector('.slider-track');
+
+
+    var slideW = slider.clientWidth/slidesShown;
+    initSlides(sliderTrack, slideW);
     var sliderW = sliderTrack.clientWidth;
-    var slideW = sliderTrack.querySelector('.slide').clientWidth;
+
+
     var boundLeft = (sliderW - slideW)*-1;
     var boundRight = 0;
     var myImpetus = new Impetus({
       source: sliderTrack,
       boundX: [boundLeft, boundRight],
+      multiplier: 1,
       update: function(x, y) {
         // x = x*-1;
-        sliderTrack.style.transform = 'translateX('+(x)+'px)';
+        // console.log(this);
+        moveSliderTrack(sliderTrack, x, y);
+
           // whatever you want to do with the values
-          console.log(x);
+
+
       }
     });
+    console.log(myImpetus);
+
+
+
+
+
     </script>
   </body>
 </html>
