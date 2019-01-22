@@ -23,17 +23,37 @@
       justify-content: center;
     }
     .slider{
-      width: 50%;
-      height: 500px;
+      width: 70%;
+      height: 900px;
       overflow: hidden;
       position: relative;
+      cursor: -webkit-grab;
+      cursor: -moz-grab;
+      cursor: -o-grab;
+      cursor: -ms-grab;
+      cursor: grab;
     }
+    .slider:active,
+    .slider.grabbing,
+    .slider.grabbing:hover,
+    .slider.grabbing:focus,
+    .slider.grabbing:active{
+      cursor: -webkit-grabbing;
+      cursor: -moz-grabbing;
+      cursor: -o-grabbing;
+      cursor: -ms-grabbing;
+      cursor: grabbing;
+    }
+
       .slider-track{
         position: absolute;
         height: 100%;
         display: flex;
         transform-origin: 0 0;
+
       }
+
+
       .slider-track .slide{
         position: relative;
         background: #dede;
@@ -52,6 +72,11 @@
       .slider-track .slide .media{
         position: absolute;
         width: 120%;
+        -moz-user-select: -moz-none;
+        -khtml-user-select: none;
+        -webkit-user-select: none;
+        -o-user-select: none;
+        user-select: none;
       }
       .slider-track .slide *:not(.media){
         position: relative;
@@ -61,6 +86,7 @@
         font-weight: 900;
         font-size: 3em;
         color: #fff;
+        text-shadow: 0px 0px 60px black;
       }
     </style>
   </head>
@@ -95,39 +121,56 @@
 
 
     <script>
-
-    function throttle(callback, wait, context = this) {
-      let timeout = null
-      let callbackArgs = null
-
-      const later = () => {
-        callback.apply(context, callbackArgs)
-        timeout = null
+    function addClass(element, clsName){
+      var arr = element.className.split(" ");
+      if (arr.indexOf(clsName) == -1) {
+        element.className += " " + clsName;
       }
+    }
+    function removeClass(element, clsName){
+      var reg = new RegExp('(\\s|^)'+clsName+'(\\s|$)');
+      element.className=element.className.replace(reg,'');
+    }
 
-      return function() {
-        if (!timeout) {
-          callbackArgs = arguments
-          timeout = setTimeout(later, wait)
-        }
+    // disable image dragging
+    function disableDragging(e) {
+      e.preventDefault();
+    }
+    // adds a mousedown event listener to disable/prevent default image dragging behavior
+    function initSlideMedia(){
+      var media, i;
+      var slider = document.querySelector('.slider');
+      media = slider.querySelectorAll('.media');
+      for (i = 0; i < media.length; i++) {
+        media[i].onmousedown = disableDragging;
       }
+      return media;
     }
 
 
+    // translate slide track along the x axis
     function moveSliderTrack(track, x, y){
       // var limit = 20;
       // var callback = function(){
-        track.style.transform = 'translateX('+(x)+'px)';
+      track.style.transform = 'translateX('+(x)+'px)';
       // }
       // callback();
       // throttle(callback, limit)();
     }
 
-    function initSlides(slidesParent, slideW){
-      console.log('getSlides!!#!#$!@#');
-      [].slice.call(slidesParent.children).forEach(function(slide){
-        console.log(slide);
-        slide.style.width = `${slideW}px`;
+
+    // assigns each slide a width and height
+    // calculates and assigns the slide margin
+    function initSlides(slidesParent, slideW, slideH){
+      var slideMargin = '1em';
+      var units = parseFloat(slideMargin);
+      [].slice.call(slidesParent.children).forEach(function(slide, i){
+        var sliderEM = window.getComputedStyle(slider, null).getPropertyValue('font-size');
+        sliderEM = parseFloat(sliderEM);
+        sliderEM *= (2*units);
+        slide.style.width = `${slideW - sliderEM}px`;
+        slide.style.height = `${slideH - sliderEM}px`;
+        slide.style.margin = slideMargin;
       });
     }
 
@@ -135,16 +178,31 @@
 
 
 
-    var slidesShown = 1; // full-bleed
 
     var slider = document.querySelector('.slider');
     var sliderTrack = slider.querySelector('.slider-track');
 
 
+    slider.onmousedown = function(){
+      addClass(this, 'grabbing');
+    }
+    slider.onmouseup = function(){
+      removeClass(this, 'grabbing');
+    }
+
+
+    var slidesShown = 1; // full-bleed
     var slideW = slider.clientWidth/slidesShown;
-    initSlides(sliderTrack, slideW);
+    var slideH = slider.clientHeight;
+
+    initSlides(sliderTrack, slideW, slideH);
     var sliderW = sliderTrack.clientWidth;
 
+    var totalSlides = (sliderW/slideW);
+    // console.log(totalSlides);
+    // console.log(sliderTrack.children);
+
+    var slidesMedia = initSlideMedia();
 
     var boundLeft = (sliderW - slideW)*-1;
     var boundRight = 0;
@@ -156,13 +214,27 @@
         // x = x*-1;
         // console.log(this);
         moveSliderTrack(sliderTrack, x, y);
-
           // whatever you want to do with the values
 
 
+          var offset = slideW;
+          var total = (sliderW - offset)*-1;
+          var progress = (x/total);
+          var factor = slideW/2;
+          var slideProgress = slidesShown/(totalSlides-1);
+          for(var i = 0; i < totalSlides; i++){
+            var curSlideProgress = progress / slideProgress;
+            curSlideProgress -= i;
+            // console.log(sliderTrack.children[i] + ": "+curSlideProgress);
+            var x = curSlideProgress*factor;
+            // console.log(slidesMedia[i]);
+            slidesMedia[i].style.transform = 'translateX('+x+'px)';
+          }
+
+
+        // console.log(curSlideProgress);
       }
     });
-    console.log(myImpetus);
 
 
 
